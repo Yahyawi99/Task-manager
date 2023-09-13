@@ -3,6 +3,9 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 
+// client
+app.use(express.static("./public"));
+
 // db
 const connectDB = require("./db/connect");
 
