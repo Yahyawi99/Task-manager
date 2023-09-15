@@ -2,6 +2,7 @@ const { Error } = require("mongoose");
 const Task = require("../models/Task");
 const { StatusCodes } = require("http-status-codes");
 const { asyncWrapper } = require("../middlewares");
+const { createCustomError } = require("../errors/custom-error");
 
 // Get all tasks
 const getAllTasks = asyncWrapper(async (req, res) => {
@@ -11,15 +12,15 @@ const getAllTasks = asyncWrapper(async (req, res) => {
 });
 
 // Get single task
-const getSingleTask = asyncWrapper(async (req, res) => {
+const getSingleTask = asyncWrapper(async (req, res, next) => {
   const { id } = req.params;
 
   const task = await Task.findOne({ _id: id });
 
   if (!task) {
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ msg: `No task  with id : ${id}` });
+    return next(
+      createCustomError(`No task  with id : ${id}`, StatusCodes.NOT_FOUND)
+    );
   }
 
   res.status(StatusCodes.OK).json({ task });
@@ -46,9 +47,9 @@ const updateTask = asyncWrapper(async (req, res) => {
   );
 
   if (!task) {
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ msg: `No task  with id : ${id}` });
+    return next(
+      createCustomError(`No task  with id : ${id}`, StatusCodes.NOT_FOUND)
+    );
   }
 
   res.status(StatusCodes.OK).json({ task });
@@ -61,9 +62,9 @@ const deleteTask = asyncWrapper(async (req, res) => {
   const task = await Task.findOneAndDelete({ _id: id });
 
   if (!task) {
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ msg: `No task  with id : ${id}` });
+    return next(
+      createCustomError(`No task  with id : ${id}`, StatusCodes.NOT_FOUND)
+    );
   }
 
   res.status(StatusCodes.OK).json({ msg: `Task deleted successfully.` });
