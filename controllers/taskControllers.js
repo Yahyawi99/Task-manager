@@ -49,25 +49,17 @@ const updateTask = async (req, res) => {
   const { name, completed } = req.body;
 
   try {
-    const task = await Task.findOne({ _id: id });
+    const task = await Task.findOneAndUpdate(
+      { _id: id },
+      { ...req.body },
+      { runValidators: true, new: true }
+    );
 
     if (!task) {
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ msg: `No task  with id : ${id}` });
     }
-
-    if (!name || completed === "") {
-      console.log(completed);
-      return res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ msg: "Please provide both values" });
-    }
-
-    task.name = name;
-    task.completed = completed;
-
-    await task.save();
 
     res.status(StatusCodes.OK).json({ task });
   } catch (error) {

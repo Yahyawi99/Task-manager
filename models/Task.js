@@ -4,6 +4,7 @@ const TaskSchema = mongoose.Schema({
   name: {
     type: String,
     unique: true,
+    index: true,
     required: [true, "Please provide task name"],
     maxlength: [20, "name can not be more than 20 charachter"],
     trim: true,
@@ -14,5 +15,7 @@ const TaskSchema = mongoose.Schema({
     default: false,
   },
 });
+
+TaskSchema.index({ name: 1 }, { unique: true });
 
 module.exports = mongoose.model("Task", TaskSchema);
