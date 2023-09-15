@@ -2,54 +2,96 @@ const { Error } = require("mongoose");
 const Task = require("../models/Task");
 const { StatusCodes } = require("http-status-codes");
 
+// Get all tasks
 const getAllTasks = async (req, res) => {
-  const tasks = await Task.find({});
+  try {
+    const tasks = await Task.find({});
 
-  res.status(StatusCodes.OK).json({ tasks, count: tasks.length });
+    res.status(StatusCodes.OK).json({ tasks, count: tasks.length });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(error);
+  }
 };
 
+// Get single task
 const getSingleTask = async (req, res) => {
   const { id } = req.params;
 
-  const task = await Task.findOne({ _id: id });
+  try {
+    const task = await Task.findOne({ _id: id });
 
-  if (!task) {
-    throw new Error(`No task with id : ${id}`);
+    if (!task) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: `No task  with id : ${id}` });
+    }
+
+    res.status(StatusCodes.OK).json({ task });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(error);
   }
-
-  res.status(StatusCodes.OK).json({ task });
 };
 
+// Create task
 const createTask = async (req, res) => {
-  const { name } = req.body;
+  try {
+    const task = await Task.create({ ...req.body });
 
-  if (!name) {
-    res.send("error");
+    res.status(StatusCodes.CREATED).json({ task });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(error);
   }
-
-  const task = await Task.create({ ...req.body });
-
-  res.status(StatusCodes.CREATED).json({ task });
 };
 
+// Update task
 const updateTask = async (req, res) => {
   const { id } = req.params;
   const { name, completed } = req.body;
 
-  const task = await Task.findOne({ _id: id });
+  try {
+    const task = await Task.findOne({ _id: id });
 
-  if (!task) {
-    throw new Error(`No task with id : ${id}`);
+    if (!task) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: `No task  with id : ${id}` });
+    }
+
+    if (!name || completed === "") {
+      console.log(completed);
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Please provide both values" });
+    }
+
+    task.name = name;
+    task.completed = completed;
+
+    await task.save();
+
+    res.status(StatusCodes.OK).json({ task });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(error);
   }
-
-  task.name = name;
-  task.completed = completed;
-
-  res.status(StatusCodes.OK).json({ task });
 };
 
+// Delete task
 const deleteTask = async (req, res) => {
-  res.send("delete");
+  const { id } = req.params;
+
+  try {
+    const task = await Task.findOneAndDelete({ _id: id });
+
+    if (!task) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: `No task  with id : ${id}` });
+    }
+
+    res.status(StatusCodes.OK).json({ msg: `Task deleted successfully.` });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(error);
+  }
 };
 
 module.exports = {
