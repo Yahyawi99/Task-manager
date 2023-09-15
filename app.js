@@ -3,11 +3,20 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 
+// Routes
+const TaskRoutes = require("./routes/taskRoutes");
+
 // client
 app.use(express.static("./public"));
 
+// middlewares
+app.use(express.json());
+
 // db
 const connectDB = require("./db/connect");
+
+// ***************************
+app.use("/api/v1/tasks", TaskRoutes);
 
 // Start
 const port = process.env.PORT || 5000;
